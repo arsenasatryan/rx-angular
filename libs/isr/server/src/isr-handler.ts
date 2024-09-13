@@ -52,13 +52,25 @@ export class ISRHandler {
     res: Response,
     config?: InvalidateConfig,
   ): Promise<Response> {
-    const { token, urlsToInvalidate } = extractDataFromBody(req);
+    let { token, urlsToInvalidate, regexpToInvalidate } = extractDataFromBody(req);
 
     if (token !== this.isrConfig.invalidateSecretToken) {
       return res.json({
         status: 'error',
         message: 'Your secret token is wrong!!!',
       });
+    }
+
+    if (regexpToInvalidate) {
+        try {
+          const regexp = new RegExp(regexpToInvalidate);
+          urlsToInvalidate = await this.cache.getByRegExp(regexp);
+        } catch (e) {
+          return res.json({
+            status: 'error',
+            message: 'Please provide valid RegExp string to `regexpToInvalidate`',
+          });
+        }
     }
 
     if (!urlsToInvalidate || !urlsToInvalidate.length) {
@@ -274,10 +286,11 @@ export class ISRHandler {
 
 const extractDataFromBody = (
   req: Request,
-): { token: string | null; urlsToInvalidate: string[] } => {
-  const { urlsToInvalidate, token } = req.body as {
+): { token: string | null; urlsToInvalidate: string[], regexpToInvalidate: string;  } => {
+  const { urlsToInvalidate, token, regexpToInvalidate } = req.body as {
     urlsToInvalidate: string[];
     token: string;
+    regexpToInvalidate: string;
   };
-  return { urlsToInvalidate, token };
+  return { urlsToInvalidate, token, regexpToInvalidate };
 };

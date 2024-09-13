@@ -43,5 +43,7 @@ export abstract class CacheHandler {
 
   abstract getAll(): Promise<string[]>;
 
+  abstract getByRegExp(regex: RegExp): Promise<string[]>;
+
   abstract clearCache?(): Promise<boolean>;
 }

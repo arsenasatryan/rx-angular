@@ -40,6 +40,20 @@ export class InMemoryCacheHandler extends CacheHandler {
     });
   }
 
+  getByRegExp(regex: RegExp): Promise<string[]> {
+    return new Promise((resolve) => {
+      const result: string[] = [];
+
+      for (let key of this.cache.keys()) {
+        if (regex.test(key)) {
+          result.push(key);
+        }
+      }
+
+      resolve(result);
+    });
+  }
+
   getAll(): Promise<string[]> {
     return new Promise((resolve) => {
       resolve(Array.from(this.cache.keys()));
